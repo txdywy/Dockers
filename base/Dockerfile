@@ -1,13 +1,28 @@
 #
-# Alpine 3.9 CURL, WGET, HTTPS, HKT_TIMEZONE
+# Dockerfile for shadowsocks-libev, simple-obfs and v2ray-plugin
 #
+FROM chenhw2/libev-build:musl as builder
+FROM chenhw2/v2ray-plugin:latest as plugin
 
-FROM alpine:3.9
+FROM chenhw2/alpine:base
+LABEL MAINTAINER CHENHW2 <https://github.com/chenhw2>
 
-ARG TZ=Asia/Hong_Kong
+COPY --from=builder /usr/bin/ss-* /usr/bin/
+COPY --from=builder /usr/bin/obfs-* /usr/bin/
+COPY --from=plugin /usr/bin/v2ray-plugin /usr/bin/
 
-RUN set -ex && \
-    apk add --update --no-cache curl wget ca-certificates tzdata \
-    && update-ca-certificates \
-    && ln -sf /usr/share/zoneinfo/$TZ /etc/localtime \
-    && rm -rf /var/cache/apk/*
+ENV TIMEOUT=120
+ENV ARGS='-d 8.8.8.8'
+
+EXPOSE $SERVER_PORT/tcp $SERVER_PORT/udp
+
+CMD ss-server \
+ -s 0.0.0.0 \
+ -p $SERVER_PORT \
+ -k ${PASSWORD:-$(hostname)} \
+ -m $METHOD \
+ -t $TIMEOUT \
+ --fast-open \
+ --no-delay \
+ -u \
+ ${ARGS}
