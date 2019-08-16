@@ -14,8 +14,6 @@ COPY --from=plugin /usr/bin/v2ray-plugin /usr/bin/
 ENV TIMEOUT=120
 ENV ARGS='-d 8.8.8.8'
 
-EXPOSE $SERVER_PORT/tcp $SERVER_PORT/udp
-
 CMD ss-server \
  -s 0.0.0.0 \
  -p $SERVER_PORT \
